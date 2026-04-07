@@ -6,6 +6,14 @@ Ultra-compressed communication mode for the [Pi coding agent](https://github.com
 
 ## Quick Start
 
+### Install via pi
+
+```bash
+$ pi install git:github.com/v2nic/pi-caveman
+```
+
+### Manual Install
+
 ```bash
 # Install extension
 cp -r extensions/caveman ~/.pi/agent/extensions/

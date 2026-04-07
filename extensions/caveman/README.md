@@ -15,13 +15,20 @@ Auto-triggers on: "caveman mode", "talk like caveman", "less tokens", "be brief"
 
 ## Installation
 
-### Copy to extensions directory
+### Install via pi
+
+```bash
+$ pi install git:github.com/v2nic/pi-caveman
+```
+
+### Manual Install
 
 ```bash
 cp -r extensions/caveman ~/.pi/agent/extensions/
 ```
 
 ### Or use with `-e` flag (temporary)
+
 
 ```bash
 pi -e ./extensions/caveman
