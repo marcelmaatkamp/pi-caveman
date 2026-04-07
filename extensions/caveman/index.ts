@@ -65,15 +65,21 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
-  // Apply caveman mode via before_agent_start
+  // Apply caveman mode by injecting a user message with instructions
   pi.on("before_agent_start", async (event, ctx) => {
     if (currentLevel === "off") return;
 
     const instruction = INSTRUCTIONS[currentLevel];
     if (!instruction) return;
 
+    // Inject a user message that contains the caveman instructions
+    // This ensures the LLM sees it as part of the conversation
     return {
-      systemPrompt: event.systemPrompt + "\n\n" + instruction,
+      message: {
+        role: "user",
+        content: [{ type: "text", text: `[CAVEMAN MODE: ${instruction}]` }],
+        display: false,
+      },
     };
   });
 
