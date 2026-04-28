@@ -6,22 +6,64 @@ Makes the Pi coding agent speak like a caveman — cutting **~75% of output toke
 
 ## Quick Start
 
-### Install via pi
+### Install for Oh My Pi (`omp`)
+
+This extension can be loaded by Oh My Pi as a local extension package.
+
+1. Clone this repository:
 
 ```bash
-$ pi install git:github.com/v2nic/pi-caveman
+git clone https://github.com/<your-user>/pi-caveman.git
+cd pi-caveman
 ```
 
-### Manual Install
+2. Add the repository path to your global Oh My Pi config:
+
+```yaml
+# ~/.omp/agent/config.yml
+extensions:
+  - /absolute/path/to/pi-caveman
+```
+
+If you already have an `extensions:` list, append the path as another item.
+
+3. Start Oh My Pi:
+
+```bash
+mise exec github:can1357/oh-my-pi@14.5.3 -- omp
+```
+
+4. Enable caveman mode inside `omp`:
+
+```text
+/caveman
+```
+
+Other levels:
+
+```text
+/caveman lite
+/caveman full
+/caveman ultra
+/caveman off
+```
+
+### Temporary use with `-e`
+
+```bash
+mise exec github:can1357/oh-my-pi@14.5.3 -- omp -e /absolute/path/to/pi-caveman/extensions/caveman/index.ts
+```
+
+### Legacy Pi install
+
+```bash
+pi install git:github.com/v2nic/pi-caveman
+```
+
+### Legacy manual install
 
 ```bash
 cp -r extensions/caveman ~/.pi/agent/extensions/
-```
-
-### Or use with `-e` flag (temporary)
-
-```bash
-pi -e ./extensions/caveman
 ```
 
 ## Features
