@@ -16,13 +16,25 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 type CavemanLevel = "off" | "lite" | "full" | "ultra";
 
-let currentLevel: CavemanLevel = "off";
+const sessionLevels = new WeakMap<object, CavemanLevel>();
+
+function sessionKey(ctx: { sessionManager?: object }): object {
+  return ctx.sessionManager ?? ctx;
+}
+
+function getLevel(ctx: { sessionManager?: object }): CavemanLevel {
+  return sessionLevels.get(sessionKey(ctx)) ?? "off";
+}
+
+function setLevel(ctx: { sessionManager?: object }, level: CavemanLevel) {
+  sessionLevels.set(sessionKey(ctx), level);
+}
 
 const INSTRUCTIONS: Record<CavemanLevel, string> = {
   off: "",
-  lite: `Caveman Lite Mode: Keep grammar. Drop filler words like "just", "really", "basically", "actually", "simply". Remove pleasantries like "sure", "certainly", "of course", "happy to". Professional but no fluff.`,
-  full: `Caveman Mode: Drop articles (a, an, the). Drop filler (just, really, basically, actually, simply). Drop pleasantries (sure, certainly, of course). Short synonyms (big not extensive, fix not "implement a solution for"). No hedging. Fragments fine. Technical terms stay exact. Code blocks unchanged. Pattern: [thing] [action] [reason]. [next step].`,
-  ultra: `Caveman Ultra Mode: Maximum compression. Telegraphic. Drop almost everything. Technical terms exact. Example: "Inline obj prop → new ref → re-render. useMemo."`,
+  lite: `Caveman Lite Mode: Keep grammar. Drop filler words like "just", "really", "basically", "actually", "simply". Remove pleasantries like "sure", "certainly", "of course", "happy to". Professional but no fluff. Do not apply to code, git commits, PR descriptions, documentation, legal/security output, or quoted error messages. Higher-priority instructions win.`,
+  full: `Caveman Mode: Drop articles (a, an, the). Drop filler (just, really, basically, actually, simply). Drop pleasantries (sure, certainly, of course). Short synonyms (big not extensive, fix not "implement a solution for"). No hedging. Fragments fine. Technical terms stay exact. Code blocks unchanged. Pattern: [thing] [action] [reason]. [next step]. Do not apply to code, git commits, PR descriptions, documentation, legal/security output, or quoted error messages. Higher-priority instructions win.`,
+  ultra: `Caveman Ultra Mode: Maximum compression. Telegraphic. Drop almost everything. Technical terms exact. Example: "Inline obj prop → new ref → re-render. useMemo." Do not apply to code, git commits, PR descriptions, documentation, legal/security output, or quoted error messages. Higher-priority instructions win.`,
 };
 
 function formatLevel(level: CavemanLevel): string {
@@ -47,13 +59,15 @@ export default function (pi: ExtensionAPI) {
       // Trim and lowercase the args
       const levelArg = args?.trim().toLowerCase() || "";
       
+      let currentLevel = getLevel(ctx);
+
       if (!levelArg) {
         // Toggle between off and full
         currentLevel = currentLevel === "off" ? "full" : "off";
       } else {
         // Extract just the level (first word, handle case like "full\n" or "fullhello")
         const cleanArg = levelArg.split(/\s+/)[0].replace(/[^a-z]/g, "");
-        
+
         if (["lite", "full", "ultra", "off"].includes(cleanArg)) {
           currentLevel = cleanArg as CavemanLevel;
         } else {
@@ -61,12 +75,14 @@ export default function (pi: ExtensionAPI) {
           return;
         }
       }
+      setLevel(ctx, currentLevel);
       ctx.ui.notify(formatLevel(currentLevel), "info");
     },
   });
 
   // Apply caveman mode by injecting a user message with instructions
   pi.on("before_agent_start", async (event, ctx) => {
+    const currentLevel = getLevel(ctx);
     if (currentLevel === "off") return;
 
     const instruction = INSTRUCTIONS[currentLevel];
@@ -85,7 +101,7 @@ export default function (pi: ExtensionAPI) {
 
   // Reset on new session
   pi.on("session_start", async (_event, ctx) => {
-    currentLevel = "off";
+    setLevel(ctx, "off");
   });
 
   // Auto-detect caveman triggers
@@ -96,7 +112,6 @@ export default function (pi: ExtensionAPI) {
       "talk like caveman",
       "use caveman",
       "less tokens",
-      "be brief",
       "fewer tokens",
     ];
 
@@ -107,17 +122,17 @@ export default function (pi: ExtensionAPI) {
         if (text.includes("lite")) level = "lite";
         else if (text.includes("ultra")) level = "ultra";
         
-        currentLevel = level;
-        ctx.ui.notify(formatLevel(currentLevel), "info");
+        setLevel(ctx, level);
+        ctx.ui.notify(formatLevel(level), "info");
         break;
       }
     }
 
     // Check for stop triggers
-    const stopTriggers = ["stop caveman", "normal mode", "normal说话"];
+    const stopTriggers = ["stop caveman", "normal mode", "speak normally"];
     for (const stop of stopTriggers) {
       if (text.includes(stop)) {
-        currentLevel = "off";
+        setLevel(ctx, "off");
         ctx.ui.notify("Caveman go away.", "info");
         break;
       }

@@ -31,7 +31,7 @@ pi -e ./extensions/caveman
 - `/caveman full` - Default caveman mode (drop articles, fragments)
 - `/caveman ultra` - Maximum compression, telegraphic
 
-Auto-triggers on: "caveman mode", "talk like caveman", "less tokens", "be brief"
+Auto-triggers on explicit token-saving requests: "caveman mode", "talk like caveman", "less tokens", "fewer tokens"
 
 ## What It Does
 
@@ -44,6 +44,7 @@ Auto-triggers on: "caveman mode", "talk like caveman", "less tokens", "be brief"
 | Articles (a, an, the) | 💀 Gone |
 | Pleasantries | 💀 "Sure I'd be happy to" is dead |
 | Hedging | 💀 "It might be worth considering" extinct |
+| Git commits / PRs / docs / legal-security output | Normal unless explicitly requested |
 
 ## Benchmarks
 
